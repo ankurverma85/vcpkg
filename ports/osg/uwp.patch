@@ -1,0 +1,345 @@
+From 489206ba92dbb1242bfd32a3c8f32d7835b85ea6 Mon Sep 17 00:00:00 2001
+From: "Ankur Verma (SF)" <ankurv@corp.microsoft.com>
+Date: Wed, 22 Jul 2020 20:57:04 -0700
+Subject: [PATCH] UWP
+
+---
+ CMakeLists.txt                            |  2 +-
+ CMakeModules/OsgMacroUtils.cmake          |  2 +
+ include/WindowsRestrictedDecls.h          | 64 +++++++++++++++++++++++
+ include/osg/GLExtensions                  |  1 +
+ include/osg/GLObjects                     |  1 +
+ src/CMakeLists.txt                        |  2 +-
+ src/OpenThreads/win32/Win32Thread.cpp     |  2 +-
+ src/osg/GL.in                             |  1 +
+ src/osg/GLExtensions.cpp                  |  2 +-
+ src/osgDB/DynamicLibrary.cpp              |  1 +
+ src/osgDB/FileNameUtils.cpp               |  5 +-
+ src/osgDB/FileUtils.cpp                   |  9 ++--
+ src/osgPlugins/OpenFlight/Utils.h         |  2 +-
+ src/osgPlugins/osc/ip/win32/UdpSocket.cpp |  1 +
+ src/osgPlugins/zip/unzip.cpp              |  4 +-
+ src/osgWidget/Input.cpp                   |  4 +-
+ 16 files changed, 87 insertions(+), 16 deletions(-)
+ create mode 100644 include/WindowsRestrictedDecls.h
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 81328ea14..941575d79 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1279,7 +1279,7 @@ SET(PKGCONFIG_FILES
+   openscenegraph-osgUtil
+   openscenegraph-osgTerrain
+   openscenegraph-osgManipulator
+-  openscenegraph-osgViewer
++  #openscenegraph-osgViewer
+   openscenegraph-osgWidget
+   openscenegraph-osgShadow
+   openscenegraph-osgAnimation
+diff --git a/CMakeModules/OsgMacroUtils.cmake b/CMakeModules/OsgMacroUtils.cmake
+index dcc1fe37d..ae39c60f6 100644
+--- a/CMakeModules/OsgMacroUtils.cmake
++++ b/CMakeModules/OsgMacroUtils.cmake
+@@ -244,6 +244,8 @@ MACRO(SETUP_LIBRARY LIB_NAME)
+             LINK_WITH_VARIABLES(${LIB_NAME} ${TARGET_LIBRARIES_VARS})
+         ENDIF(TARGET_LIBRARIES_VARS)
+         LINK_CORELIB_DEFAULT(${LIB_NAME})
++        find_package(unofficial-angle REQUIRED QUIET)
++        LINK_INTERNAL(${LIB_NAME} unofficial::angle::libANGLE unofficial::angle::libEGL unofficial::angle::libGLESv2)
+ 
+     INCLUDE(ModuleInstall OPTIONAL)
+ ENDMACRO(SETUP_LIBRARY LIB_NAME)
+diff --git a/include/WindowsRestrictedDecls.h b/include/WindowsRestrictedDecls.h
+new file mode 100644
+index 000000000..d786cafd0
+--- /dev/null
++++ b/include/WindowsRestrictedDecls.h
+@@ -0,0 +1,64 @@
++#include <windows.h>
++#define GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS        (0x00000004)
++#define mkdir(x,y) _mkdir((x))
++typedef
++BOOL
++(WINAPI*
++    PGET_MODULE_HANDLE_EXA)(
++        _In_        DWORD        dwFlags,
++        _In_opt_    LPCSTR     lpModuleName,
++        _Outptr_ HMODULE* phModule
++        );
++typedef
++BOOL
++(WINAPI*
++    PGET_MODULE_HANDLE_EXW)(
++        _In_        DWORD        dwFlags,
++        _In_opt_    LPCWSTR     lpModuleName,
++        _Outptr_ HMODULE* phModule
++        );
++#ifdef UNICODE
++#define PGET_MODULE_HANDLE_EX  PGET_MODULE_HANDLE_EXW
++#else
++#define PGET_MODULE_HANDLE_EX  PGET_MODULE_HANDLE_EXA
++#endif // !UNICODE
++#if !defined(__MINGW32__)
++#define stat64 _stati64
++#endif
++
++WINBASEAPI
++_Must_inspect_result_
++_Success_(return != 0 && return < uSize)
++    UINT
++    WINAPI
++    GetWindowsDirectoryW(
++        _Out_writes_to_opt_(uSize, return +1) LPWSTR lpBuffer,
++        _In_ UINT uSize
++    );
++// set up for windows so acts just like unix access().
++#ifndef F_OK
++#define F_OK 4
++#endif
++
++WINBASEAPI
++_When_(lpModuleName == NULL, _Ret_notnull_)
++_When_(lpModuleName != NULL, _Ret_maybenull_)
++HMODULE
++WINAPI
++GetModuleHandleA(
++    _In_opt_ LPCSTR lpModuleName
++);
++WINBASEAPI
++_Ret_maybenull_
++HMODULE
++WINAPI
++LoadLibraryW(
++    _In_ LPCWSTR lpLibFileName
++);
++
++WINBASEAPI
++DWORD
++WINAPI
++timeGetTime(
++    void
++);
+\ No newline at end of file
+diff --git a/include/osg/GLExtensions b/include/osg/GLExtensions
+index 63e46538c..4e816bad5 100644
+--- a/include/osg/GLExtensions
++++ b/include/osg/GLExtensions
+@@ -13,6 +13,7 @@
+ 
+ #ifndef OSG_GLEXTENSIONS
+ #define OSG_GLEXTENSIONS 1
++#include <angle_gl.h>
+ 
+ #include <osg/Export>
+ #include <osg/GLDefines>
+diff --git a/include/osg/GLObjects b/include/osg/GLObjects
+index 84b5ec308..8282cae70 100644
+--- a/include/osg/GLObjects
++++ b/include/osg/GLObjects
+@@ -13,6 +13,7 @@
+ 
+ #ifndef OSG_GLOBJECTS
+ #define OSG_GLOBJECTS 1
++#include <angle_gl.h>
+ 
+ #include <osg/Referenced>
+ #include <osg/GL>
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d121eb00d..fd9b50225 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -14,7 +14,7 @@ FOREACH( mylibfolder
+         osgUtil
+         osgGA
+         osgText
+-        osgViewer
++        #osgViewer
+         osgAnimation
+         osgFX
+         osgManipulator
+diff --git a/src/OpenThreads/win32/Win32Thread.cpp b/src/OpenThreads/win32/Win32Thread.cpp
+index ce1db0b73..496cd9d84 100644
+--- a/src/OpenThreads/win32/Win32Thread.cpp
++++ b/src/OpenThreads/win32/Win32Thread.cpp
+@@ -424,7 +424,7 @@ int Thread::cancel()
+         {
+             // did not terminate cleanly force termination
+             pd->isRunning = false;
+-            return TerminateThread(pd->tid.get(),(DWORD)-1);
++            //return TerminateThread(pd->tid.get(),(DWORD)-1);
+         }
+     }
+ 
+diff --git a/src/osg/GL.in b/src/osg/GL.in
+index 2f790be4f..ba8778193 100644
+--- a/src/osg/GL.in
++++ b/src/osg/GL.in
+@@ -13,6 +13,7 @@
+ 
+ #ifndef OSG_OPENGL
+ #define OSG_OPENGL 1
++#include <angle_gl.h>
+ 
+ #include <osg/Config>
+ #include <osg/Export>
+diff --git a/src/osg/GLExtensions.cpp b/src/osg/GLExtensions.cpp
+index c64c5995f..4dc80f7c8 100644
+--- a/src/osg/GLExtensions.cpp
++++ b/src/osg/GLExtensions.cpp
+@@ -343,7 +343,7 @@ OSG_INIT_SINGLETON_PROXY(GLExtensionDisableStringInitializationProxy, osg::getGL
+     #elif defined(WIN32)
+ 
+         #if defined(OSG_GLES2_AVAILABLE)
+-            static HMODULE hmodule = GetModuleHandle(TEXT("libGLESv2.dll"));
++            static HMODULE hmodule = GetModuleHandleW(TEXT("libGLESv2.dll"));
+             return convertPointerType<void*, PROC>(GetProcAddress(hmodule, funcName));
+         #elif defined(OSG_GLES1_AVAILABLE)
+             static HMODULE hmodule = GetModuleHandleA(TEXT("libgles_cm.dll"));
+diff --git a/src/osgDB/DynamicLibrary.cpp b/src/osgDB/DynamicLibrary.cpp
+index b9a47df5f..2cd5ca2fe 100644
+--- a/src/osgDB/DynamicLibrary.cpp
++++ b/src/osgDB/DynamicLibrary.cpp
+@@ -23,6 +23,7 @@
+ #include <io.h>
+ #include <windows.h>
+ #include <winbase.h>
++#include <WindowsRestrictedDecls.h>
+ #elif defined(__APPLE__) && defined(APPLE_PRE_10_3)
+ #include <mach-o/dyld.h>
+ #else // all other unix
+diff --git a/src/osgDB/FileNameUtils.cpp b/src/osgDB/FileNameUtils.cpp
+index ceb09ebe9..f7692ac41 100644
+--- a/src/osgDB/FileNameUtils.cpp
++++ b/src/osgDB/FileNameUtils.cpp
+@@ -20,6 +20,7 @@
+ 
+ #ifdef WIN32
+     #include <windows.h>
++    #include <WindowsRestrictedDecls.h>
+ #endif
+ 
+ #if defined(__sgi)
+@@ -301,6 +302,7 @@ std::string osgDB::getRealPath(const std::string& path)
+     if (GetFullPathNameW(wpath.c_str(), _countof(retbuf), retbuf, NULL)==0) {
+         return path;
+     }
++#if 0
+     // Force drive letter to upper case
+     if ((retbuf[1] == ':') && iswlower(retbuf[0]))
+         retbuf[0] = towupper(retbuf[0]);
+@@ -326,7 +328,8 @@ std::string osgDB::getRealPath(const std::string& path)
+         FilePath.append(getSimpleFileName(retbuf8));
+         return FilePath;
+     }
+-
++#endif
++    return path;
+ #else
+ 
+     // Not unicode compatible should give an error if UNICODE defined
+diff --git a/src/osgDB/FileUtils.cpp b/src/osgDB/FileUtils.cpp
+index c0c8cec88..0966462fb 100644
+--- a/src/osgDB/FileUtils.cpp
++++ b/src/osgDB/FileUtils.cpp
+@@ -15,10 +15,6 @@
+ // #ifndef is inspired by https://svn.apache.org/repos/asf/logging/log4cxx/tags/v0_9_4/include/log4cxx/helpers/tchar.h
+ // defining type as plain char is from unzip.h, line 64
+ 
+-#ifndef TCHAR
+-typedef char TCHAR;
+-#endif
+-
+ 
+ // currently this impl is for _all_ platforms, except as defined.
+ // the mac version will change soon to reflect the path scheme under osx, but
+@@ -32,6 +28,7 @@ typedef char TCHAR;
+     #include <sys/types.h>
+     #include <sys/stat.h>
+     #include <direct.h> // for _mkdir
++    #include <WindowsRestrictedDecls.h>
+ 
+     #define mkdir(x,y) _mkdir((x))
+ 
+@@ -243,8 +240,8 @@ std::string osgDB::getCurrentWorkingDirectory( void )
+ #ifndef MAX_PATH
+     #define MAX_PATH 1024
+ #endif
+-    TCHAR rootdir[MAX_PATH];
+-    if(getcwd(rootdir,MAX_PATH-1))
++    char rootdir[MAX_PATH];
++    if(_getcwd(rootdir,MAX_PATH-1))
+     {
+         return(rootdir);
+     }
+diff --git a/src/osgPlugins/OpenFlight/Utils.h b/src/osgPlugins/OpenFlight/Utils.h
+index fbfb9d2ee..9e4638c99 100644
+--- a/src/osgPlugins/OpenFlight/Utils.h
++++ b/src/osgPlugins/OpenFlight/Utils.h
+@@ -24,7 +24,7 @@
+ #if defined(_WIN32)
+ 
+     #include <windows.h>
+-    #define FLTEXP_DELETEFILE(file) DeleteFile((file))
++    #define FLTEXP_DELETEFILE(file) DeleteFileA((file))
+ 
+ #else   // Unix
+ 
+diff --git a/src/osgPlugins/osc/ip/win32/UdpSocket.cpp b/src/osgPlugins/osc/ip/win32/UdpSocket.cpp
+index 08d6c2ac4..9b94046e6 100644
+--- a/src/osgPlugins/osc/ip/win32/UdpSocket.cpp
++++ b/src/osgPlugins/osc/ip/win32/UdpSocket.cpp
+@@ -32,6 +32,7 @@
+ #include <winsock2.h>   // this must come first to prevent errors with MSVC7
+ #include <windows.h>
+ #include <mmsystem.h>   // for timeGetTime()
++#include <WindowsRestrictedDecls.h>
+ 
+ #include <vector>
+ #include <algorithm>
+diff --git a/src/osgPlugins/zip/unzip.cpp b/src/osgPlugins/zip/unzip.cpp
+index 0bec28f0c..60a37d57c 100644
+--- a/src/osgPlugins/zip/unzip.cpp
++++ b/src/osgPlugins/zip/unzip.cpp
+@@ -4065,7 +4065,7 @@ ZRESULT TUnzip::Get(int index,ZIPENTRY *ze)
+   //
+   ze->index=uf->num_file;
+   TCHAR tfn[MAX_PATH];
+-#ifdef UNICODE
++#ifdef UNICODE_DISABLED
+   MultiByteToWideChar(CP_UTF8,0,fn,-1,tfn,MAX_PATH);
+ #else
+ //  strcpy_s(tfn,MAX_PATH,fn);
+@@ -4176,7 +4176,7 @@ ZRESULT TUnzip::Get(int index,ZIPENTRY *ze)
+ 
+ ZRESULT TUnzip::Find(const TCHAR *tname,bool ic,int *index,ZIPENTRY *ze)
+ { char name[MAX_PATH];
+-#ifdef UNICODE
++#ifdef UNICODE_DISABLED
+   WideCharToMultiByte(CP_UTF8,0,tname,-1,name,MAX_PATH,0,0);
+ #else
+ //  strcpy_s(name,MAX_PATH,tname);
+diff --git a/src/osgWidget/Input.cpp b/src/osgWidget/Input.cpp
+index 3b565b04a..b0dae1798 100644
+--- a/src/osgWidget/Input.cpp
++++ b/src/osgWidget/Input.cpp
+@@ -512,7 +512,7 @@ bool Input::keyDown(int key, int mask, const WindowManager*)
+         {
+             std::string data;
+ // Data from clipboard
+-#ifdef WIN32
++#if defined(WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+             if (::OpenClipboard(NULL))
+             {
+                 HANDLE hData = ::GetClipboardData( CF_TEXT );
+@@ -571,7 +571,7 @@ bool Input::keyDown(int key, int mask, const WindowManager*)
+                 data = selection.createUTF8EncodedString();
+ 
+ // Data to clipboard
+-#ifdef WIN32
++#if defined(WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+                 if(::OpenClipboard(NULL))
+                 {
+                     ::EmptyClipboard();
+-- 
+2.26.2.windows.1
+
