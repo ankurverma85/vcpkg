@@ -14,8 +14,8 @@ elseif (EXISTS ${CMAKE_CURRENT_LIST_DIR}/use_git)
         REF ${commitId}
     )
 else()
-    set(commitId 7cd3e15b10773cd60b6f28ccc6f1389d4141f64e)
-    set(sha512 252528cf1b165d39dc1f77d7d289bdb394697ad5f485adf4755fbd8e0fa5a0467423a8a1e072185b067b86e856024bac1472ffca2ba4764abdea200d3d78b38d)
+    set(commitId 54d8a70627096f0562077d6136a950bd4591faa7)
+    set(sha512 680d750813fde850dd45f8845354bd0252965cbf337803264f3bca4574d055e51ee9071fd4bb025c4b64785b80c9d7671fe6cfb5b028c33ffc9c0edaae288e0e)
     vcpkg_from_github(
         OUT_SOURCE_PATH SOURCE_PATH
         REPO ankurverma85/stencil
