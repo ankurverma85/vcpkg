@@ -1,6 +1,5 @@
 vcpkg_fail_port_install(
-    ON_TARGET "uwp" "linux" "osx" "android" "freebsd"
-    ON_ARCH "arm" "arm64"
+    ON_TARGET "uwp" "osx" "freebsd"
 )
 
 vcpkg_from_github(
@@ -12,6 +11,7 @@ vcpkg_from_github(
     PATCHES
         Compile-with-msvc.patch
         fix-version.patch
+        FixLinuxStaticLibName.patch
 )
 
 file(
@@ -35,16 +35,6 @@ file(
 )
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
-else()
-    file(GLOB DEBUG_TOOLS "${CURRENT_PACKAGES_DIR}/debug/bin/*.exe")
-    file(GLOB RELEASE_TOOLS "${CURRENT_PACKAGES_DIR}/bin/*.exe")
-    file(
-        INSTALL ${RELEASE_TOOLS}
-        DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT}
-    )
-    vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/${PORT})
-    file(REMOVE ${DEBUG_TOOLS} ${RELEASE_TOOLS})
 endif()

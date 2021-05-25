@@ -1,7 +1,7 @@
-diff --git a/cmake/modules/Version.cmake b/cmake/modules/Version.cmake
+diff --git a/cmake/Modules/Version.cmake b/cmake/Modules/Version.cmake
 index 2d4e76d..6acffe2 100644
---- a/cmake/modules/Version.cmake
-+++ b/cmake/modules/Version.cmake
+--- a/cmake/Modules/Version.cmake
++++ b/cmake/Modules/Version.cmake
 @@ -39,7 +39,9 @@ if(GIT_FOUND)
          OUTPUT_VARIABLE GIT_DESCRIBE OUTPUT_STRIP_TRAILING_WHITESPACE
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

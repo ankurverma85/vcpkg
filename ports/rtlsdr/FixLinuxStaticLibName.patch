@@ -1,0 +1,27 @@
+From 5dcdae0ca039523230598d86a4e8c89377bbabc4 Mon Sep 17 00:00:00 2001
+From: Ankur Verma <ankurv@microsoft.com>
+Date: Tue, 25 May 2021 00:23:46 -0700
+Subject: [PATCH] patch
+
+---
+ src/CMakeLists.txt | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index fda4612..d2c1012 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -50,10 +50,6 @@ target_include_directories(rtlsdr_static PUBLIC
+   $<INSTALL_INTERFACE:include>  # <prefix>/include
+   )
+ set_property(TARGET rtlsdr_static APPEND PROPERTY COMPILE_DEFINITIONS "rtlsdr_STATIC" )
+-if(NOT WIN32)
+-# Force same library filename for static and shared variants of the library
+-set_target_properties(rtlsdr_static PROPERTIES OUTPUT_NAME rtlsdr)
+-endif()
+ generate_export_header(rtlsdr_static)
+ 
+ ########################################################################
+-- 
+2.31.1
+
