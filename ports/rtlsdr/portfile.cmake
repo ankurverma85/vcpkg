@@ -12,11 +12,7 @@ vcpkg_from_github(
         Compile-with-msvc.patch
         fix-version.patch
         FixLinuxStaticLibName.patch
-)
-
-file(
-    COPY ${CMAKE_CURRENT_LIST_DIR}/Findlibusb.cmake
-    DESTINATION ${SOURCE_PATH}/cmake/Modules
+	findlibusb.patch
 )
 
 vcpkg_configure_cmake(

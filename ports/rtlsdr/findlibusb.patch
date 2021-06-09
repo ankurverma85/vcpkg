@@ -1,0 +1,76 @@
+From 543569d7c353c3aeb7424412a9d99356c845ae30 Mon Sep 17 00:00:00 2001
+From: Ankur Verma <ankur.verma@outlook.com>
+Date: Tue, 8 Jun 2021 22:58:38 -0700
+Subject: [PATCH] patch
+
+---
+ CMakeLists.txt     | 11 ++++++-----
+ src/CMakeLists.txt |  8 --------
+ 2 files changed, 6 insertions(+), 13 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 674ff2d..fd26c0e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -68,24 +68,25 @@ endif()
+ ########################################################################
+ if(MSVC)
+ find_package(pthreads)
+-find_package(libusb)
+ include_directories(${PThreads4W_INCLUDE_DIR})
+-include_directories(${LIBUSB_INCLUDE_DIRS})
+ else()
+ if(WIN32 AND NOT MINGW)
+     set(THREADS_USE_PTHREADS_WIN32 true)
+ endif()
+ find_package(Threads)
+-find_package(PkgConfig)
+-pkg_check_modules(LIBUSB libusb-1.0 IMPORTED_TARGET)
++endif()
+ 
++find_package(libusb)
++include_directories(${LIBUSB_INCLUDE_DIRS})
+ if(NOT LIBUSB_FOUND)
+     message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
+ endif()
++if(NOT WIN32)
++    list(APPEND LIBUSB_LIBRARIES udev)
++endif()
+ if(NOT THREADS_FOUND)
+     message(FATAL_ERROR "pthreads(-win32) required to compile rtl-sdr")
+ endif()
+-endif()
+ 
+ ########################################################################
+ # Create uninstall target
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index d2c1012..9a19211 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -20,11 +20,7 @@
+ ########################################################################
+ add_library(rtlsdr SHARED librtlsdr.c
+   tuner_e4k.c tuner_fc0012.c tuner_fc0013.c tuner_fc2580.c tuner_r82xx.c)
+-if(MSVC)
+ target_link_libraries(rtlsdr ${LIBUSB_LIBRARIES})
+-else()
+-target_link_libraries(rtlsdr PkgConfig::LIBUSB)
+-endif()
+ target_include_directories(rtlsdr PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+   $<INSTALL_INTERFACE:include>  # <prefix>/include
+@@ -40,11 +36,7 @@ generate_export_header(rtlsdr)
+ ########################################################################
+ add_library(rtlsdr_static STATIC librtlsdr.c
+   tuner_e4k.c tuner_fc0012.c tuner_fc0013.c tuner_fc2580.c tuner_r82xx.c)
+-if(MSVC)
+ target_link_libraries(rtlsdr_static ${LIBUSB_LIBRARIES})
+-else()
+-target_link_libraries(rtlsdr_static PkgConfig::LIBUSB)
+-endif()
+ target_include_directories(rtlsdr_static PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+   $<INSTALL_INTERFACE:include>  # <prefix>/include
+-- 
+2.31.1
+
