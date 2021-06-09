@@ -44,7 +44,6 @@ if(NOT EXISTS "${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake")
 endif()
 
 include("${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake")
-
 if(NOT _VCPKG_ANDROID_TOOLCHAIN)
     set(_VCPKG_ANDROID_TOOLCHAIN 1)
     get_property( _CMAKE_IN_TRY_COMPILE GLOBAL PROPERTY IN_TRY_COMPILE )
@@ -64,3 +63,4 @@ if(NOT _VCPKG_ANDROID_TOOLCHAIN)
         string(APPEND CMAKE_EXE_LINKER_FLAGS_RELEASE " ${VCPKG_LINKER_FLAGS_RELEASE} ")
     endif()
 endif()
+link_libraries(log)
