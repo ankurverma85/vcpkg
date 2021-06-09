@@ -12,7 +12,6 @@ vcpkg_from_github(
         Compile-with-msvc.patch
         fix-version.patch
         FixLinuxStaticLibName.patch
-        findlibusb.patch
         fix-pthread-cancel.patch
         fix-android.patch
 )
