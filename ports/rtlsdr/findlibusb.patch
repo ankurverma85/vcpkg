@@ -33,7 +33,7 @@ index 674ff2d..fd26c0e 100644
  if(NOT LIBUSB_FOUND)
      message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
  endif()
-+if(NOT WIN32)
++if(NOT WIN32 AND NOT ANDROID)
 +    list(APPEND LIBUSB_LIBRARIES udev)
 +endif()
  if(NOT THREADS_FOUND)

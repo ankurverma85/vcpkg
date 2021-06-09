@@ -1,0 +1,25 @@
+From 912b52184494c59b612936146b9b8f12567fa3fb Mon Sep 17 00:00:00 2001
+From: Ankur Verma <ankur.verma@outlook.com>
+Date: Wed, 9 Jun 2021 01:13:36 -0700
+Subject: [PATCH] fix-android.patch
+
+---
+ src/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 9a19211..b9eb66d 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -129,7 +129,7 @@ if(UNIX)
+ target_link_libraries(rtl_fm m)
+ target_link_libraries(rtl_adsb m)
+ target_link_libraries(rtl_power m)
+-if(APPLE OR CMAKE_SYSTEM MATCHES "OpenBSD")
++if(APPLE OR ANDROID OR CMAKE_SYSTEM MATCHES "OpenBSD")
+     target_link_libraries(rtl_test m)
+ else()
+     target_link_libraries(rtl_test m rt)
+-- 
+2.31.1
+
