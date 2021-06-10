@@ -1,0 +1,55 @@
+From 4f3c84d15314742009c503c5f93060667236ac59 Mon Sep 17 00:00:00 2001
+From: ankur <ankur,verma@outlook.com>
+Date: Wed, 9 Jun 2021 20:31:56 -0700
+Subject: [PATCH] patch
+
+---
+ port/cpl_aws_win32.cpp | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/port/cpl_aws_win32.cpp b/port/cpl_aws_win32.cpp
+index 24111ec..b031661 100644
+--- a/port/cpl_aws_win32.cpp
++++ b/port/cpl_aws_win32.cpp
+@@ -27,7 +27,7 @@
+  ****************************************************************************/
+ 
+ #include "cpl_port.h"
+-
++#if 0
+ #if defined(WIN32) && defined(_MSC_VER)
+ 
+ #define _WIN32_DCOM
+@@ -117,15 +117,15 @@ static void FetchUUIDFunc(void*)
+ com_cleanup:
+     CoUninitialize();
+ }
+-
++#endif
+ bool CPLFetchWindowsProductUUID(CPLString &osStr);
+ 
+ bool CPLFetchWindowsProductUUID(CPLString &osStr)
+ {
++#if 0
+     static std::mutex gMutex;
+     std::lock_guard<std::mutex> oGuard(gMutex);
+     static bool bAttemptedGUID = false;
+-
+     if( !bAttemptedGUID )
+     {
+         // All COM work is in a different thread to avoid potential problems:
+@@ -135,9 +135,10 @@ bool CPLFetchWindowsProductUUID(CPLString &osStr)
+         CPLJoinThread(pThread);
+         bAttemptedGUID = true;
+     }
+-
+     osStr = osWindowsProductUUID;
+     return !osWindowsProductUUID.empty();
++#endif
++    return false;
+ }
+ 
+ #endif /* defined(WIN32) && defined(_MSC_VER) */
+-- 
+2.31.1.windows.1
+

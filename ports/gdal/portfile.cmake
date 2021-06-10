@@ -20,6 +20,7 @@ if (VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     list(APPEND GDAL_PATCHES 0003-Fix-static-build.patch)
 endif()
 list(APPEND GDAL_PATCHES 0004-Fix-cfitsio.patch)
+list(APPEND GDAL_PATCHES fix-windows-atl.patch)
 
 vcpkg_extract_source_archive_ex(
     ARCHIVE ${ARCHIVE}
