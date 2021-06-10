@@ -1,0 +1,41 @@
+From 34eea3f209d339d6e4ad33bc87dfda027b3c4450 Mon Sep 17 00:00:00 2001
+From: Ankur Verma <ankurv@microsoft.com>
+Date: Tue, 8 Jun 2021 21:20:21 -0700
+Subject: [PATCH] patch
+
+---
+ wincon/Makefile.vc | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/wincon/Makefile.vc b/wincon/Makefile.vc
+index 80c4689..87159b2 100644
+--- a/wincon/Makefile.vc
++++ b/wincon/Makefile.vc
+@@ -1,6 +1,6 @@
+ # Visual C++ Makefile for PDCurses - Windows console
+ #
+-# Usage: nmake -f [path\]Makefile.vc [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
++# Usage: nmake -f [path\]Makefile.vc [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y] [DYNCRT=Y]
+ #        [INFOEX=N] [target]
+ #
+ # where target can be any of:
+@@ -63,6 +63,16 @@ PDCLIBS		= $(CURSESDLL)
+ PDCLIBS		= $(LIBCURSES)
+ !endif
+ 
++!if DEFINED(DYNCRT) && DEFINED(DEBUG)
++CFLAGS = $(CFLAGS) -MDd
++!else if DEFINED(DYNCRT) && !DEFINED(DEBUG)
++CFLAGS = $(CFLAGS) -MD
++!else if !DEFINED(DYNCRT) && DEFINED(DEBUG)
++CFLAGS = $(CFLAGS) -MTd
++!else
++CFLAGS = $(CFLAGS) -MT
++!endif
++
+ BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c $(CFLAGS) $(DLLOPT) \
+ $(WIDEOPT) $(UTF8OPT) $(INFOPT)
+ 
+-- 
+2.31.1.windows.1
+

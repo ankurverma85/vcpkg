@@ -1,5 +1,3 @@
-vcpkg_check_linkage(ONLY_DYNAMIC_CRT)
-
 find_program(NMAKE nmake)
 
 vcpkg_from_github(
@@ -8,12 +6,17 @@ vcpkg_from_github(
     REF 6c1f95c4fa9f9f105879c2d99dd72a5bf335c046 # 3.9
     SHA512 2d682a3516baaa58a97854aca64d985768b7af76d998240b54afc57ddf2a44894835a1748888f8dd7c1cc8045ede77488284f8adf1b73878879b4b4d3391218d
     HEAD_REF master
+    PATCHES staticcrt.patch
 )
 
 set(PDC_NMAKE_CMD ${NMAKE} /A -f ${SOURCE_PATH}/wincon/Makefile.vc WIDE=Y UTF8=Y)
 
 set(PDC_NMAKE_CWD ${SOURCE_PATH}/wincon)
 set(PDC_PDCLIB ${SOURCE_PATH}/wincon/pdcurses)
+
+if (VCPKG_CRT_LINKAGE STREQUAL "dynamic")
+    set(PDC_NMAKE_CMD ${PDC_NMAKE_CMD} DYNCRT=Y)
+endif()
 
 if (VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     set(PDC_NMAKE_CMD ${PDC_NMAKE_CMD} DLL=Y)
