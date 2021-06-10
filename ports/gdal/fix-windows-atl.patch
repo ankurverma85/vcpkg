@@ -11,15 +11,25 @@ diff --git a/port/cpl_aws_win32.cpp b/port/cpl_aws_win32.cpp
 index 24111ec..b031661 100644
 --- a/port/cpl_aws_win32.cpp
 +++ b/port/cpl_aws_win32.cpp
-@@ -27,7 +27,7 @@
-  ****************************************************************************/
- 
- #include "cpl_port.h"
--
+@@ -34,15 +34,18 @@
+ #include <iostream>
+ #include <mutex>
+
 +#if 0
- #if defined(WIN32) && defined(_MSC_VER)
- 
- #define _WIN32_DCOM
+ #include <comdef.h>
+ #include <Wbemidl.h>
+ #include <windows.h>
+ #include <comutil.h>
+ #include <atlbase.h>
++#endif
+
+ #include "cpl_string.h"
+ #include "cpl_multiproc.h"
+
++#if 0
+ CPL_CVSID("$Id: cpl_aws_win32.cpp f3f6c7bc5289c916ba239ab8ca7b52f137343629 2020-10-06 12:40:34 +0200 Even Rouault $")
+
+ static CPLString osWindowsProductUUID;
 @@ -117,15 +117,15 @@ static void FetchUUIDFunc(void*)
  com_cleanup:
      CoUninitialize();
