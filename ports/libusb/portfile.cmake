@@ -50,11 +50,26 @@ if(VCPKG_TARGET_IS_WINDOWS)
   )
   file(INSTALL ${SOURCE_PATH}/libusb/libusb.h  DESTINATION ${CURRENT_PACKAGES_DIR}/include/libusb-1.0)
 else()
+    if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL Android)
+      file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
+      file(COPY ${CMAKE_CURRENT_LIST_DIR}/config.h DESTINATION ${SOURCE_PATH})
+
+      vcpkg_configure_cmake(
+        SOURCE_PATH ${SOURCE_PATH}
+        PREFER_NINJA
+        OPTIONS
+            -DSTENCIL_INSTALL_BUILDTOOLS=ON
+            -DBUILD_TESTING=OFF
+      )
+      vcpkg_install_cmake()
+      file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+    else()
     vcpkg_configure_make(
         SOURCE_PATH ${SOURCE_PATH}
         AUTOCONFIG
     )
     vcpkg_install_make()
+    endif()
 endif()
 
 configure_file(${CURRENT_PORT_DIR}/usage ${CURRENT_PACKAGES_DIR}/share/${PORT}/usage @ONLY)
