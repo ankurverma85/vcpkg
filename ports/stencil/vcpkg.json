@@ -1,0 +1,22 @@
+{
+    "name": "stencil",
+    "version": "0.0.5",
+    "description": "Stencil",
+    "dependencies": [
+        "toml11",
+        "tsl-ordered-map",
+        "tinyxml2",
+        "cxxopts",
+        "cpp-httplib",
+        "nlohmann-json"
+    ],
+    "features": {
+        "tests": {
+            "description": "Build with unittests",
+            "dependencies": [
+                "dtl",
+                "catch2"
+            ]
+        }
+    }
+}
