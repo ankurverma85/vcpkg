@@ -36,6 +36,7 @@ vcpkg_download_distfile(ARCHIVE
 )
 
 set(PATCHES
+        patches/windows/remove-pthreadwin32.patch
         patches/windows/install.patch
         patches/windows/win_bison_flex.patch
         patches/windows/openssl_exe_path.patch

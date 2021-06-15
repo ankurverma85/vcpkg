@@ -1,0 +1,25 @@
+From ca8842f345abd811c0fc9e4cc6415a5506aacfb1 Mon Sep 17 00:00:00 2001
+From: Ankur Verma <ankurv@microsoft.com>
+Date: Tue, 15 Jun 2021 10:57:50 -0700
+Subject: [PATCH] patch
+
+---
+ src/interfaces/libpq/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/interfaces/libpq/Makefile b/src/interfaces/libpq/Makefile
+index 4b0a8c7..bed48b5 100644
+--- a/src/interfaces/libpq/Makefile
++++ b/src/interfaces/libpq/Makefile
+@@ -53,7 +53,7 @@ libpqrc.o: libpq.rc
+ 	$(WINDRES) -i $< -o $@
+ 
+ ifeq ($(enable_thread_safety), yes)
+-OBJS += pthread-win32.o
++# OBJS += pthread-win32.o
+ endif
+ endif
+ 
+-- 
+2.31.1.windows.1
+
